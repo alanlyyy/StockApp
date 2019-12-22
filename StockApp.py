@@ -32,7 +32,7 @@ class plotData:
         """Querys stock data given a stock symbol.
         Obtain an json file and convert contents into a python dictionary.
         """
-        URL = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=%s&outputsize=full&apikey=13Y2FLBPUCBDMQCC" %(self.stockSymbol)
+        URL = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=%s&outputsize=full&apikey=demo" %(self.stockSymbol)
 
         r = requests.get(URL)
 
