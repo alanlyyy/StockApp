@@ -1,19 +1,15 @@
 #alphavantage stock api
 #https://www.alphavantage.co/documentation/#
 
-#API KEY: 13Y2FLBPUCBDMQCC 
 
 #How to to Query Timeseries data:
-#ex) https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=13Y2FLBPUCBDMQCC
-#    https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=MSFT&outputsize=full&apikey=13Y2FLBPUCBDMQCC
+#ex) https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo
+#    https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=MSFT&outputsize=full&apikey=demo
 
-#List of Ticker Symbols:
+#List of Ticker Symbol
 #https://stackoverflow.com/questions/25338608/download-all-stock-symbol-list-of-a-market
 
-#SEC stock fundamentals
-#https://www.reddit.com/r/investing/comments/4qxjr6/ive_processed_1tb_of_secs_data_to_extract/
-#API Token: MCP1y3oNy9IwN8RrlQ3ceg
-#http://usfundamentals.com/
+#Please use your own api key from alphavantage. replace apikey=demo with apikey = apikey
 
 from bs4 import BeautifulSoup
 import requests
