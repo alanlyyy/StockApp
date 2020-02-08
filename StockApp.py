@@ -1,38 +1,38 @@
 #alphavantage stock api
 #https://www.alphavantage.co/documentation/#
 
+#API KEY: 13Y2FLBPUCBDMQCC 
 
 #How to to Query Timeseries data:
-#ex) https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo
-#    https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=MSFT&outputsize=full&apikey=demo
+#ex) https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=13Y2FLBPUCBDMQCC
+#    https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=MSFT&outputsize=full&apikey=13Y2FLBPUCBDMQCC
 
-#List of Ticker Symbol
+#List of Ticker Symbols:
 #https://stackoverflow.com/questions/25338608/download-all-stock-symbol-list-of-a-market
 
-#Please use your own api key from alphavantage. replace apikey=demo with apikey = apikey
+#SEC stock fundamentals
+#https://www.reddit.com/r/investing/comments/4qxjr6/ive_processed_1tb_of_secs_data_to_extract/
+#API Token: MCP1y3oNy9IwN8RrlQ3ceg
+#http://usfundamentals.com/
 
 from bs4 import BeautifulSoup
 import requests
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
-import datetime
+import datetime, os, time
 
-from ExtractText import ExtractText
-from generateFin import finExtract
-
-
-class plotData:
+class stockData:
     
     def __init__(self,stockSymbol):
         
         self.stockSymbol = stockSymbol
-
+        
     def queryStockData(self):
         """Querys stock data given a stock symbol.
         Obtain an json file and convert contents into a python dictionary.
         """
-        URL = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=%s&outputsize=full&apikey=demo" %(self.stockSymbol)
+        URL = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=%s&outputsize=full&apikey=13Y2FLBPUCBDMQCC" %(self.stockSymbol)
 
         r = requests.get(URL)
 
@@ -41,6 +41,7 @@ class plotData:
 
         #convert soup obejct to python dictionary
         newDictionary= json.loads(str(soup))
+        
         
         return newDictionary
 
@@ -82,6 +83,10 @@ class plotData:
 
         #drop previous date
         df = df.drop(columns='Date')
+        
+        #save a CSV copy for cache
+        fileName = "stock/'" + self.stockSymbol + ".csv"
+        df.to_csv(fileName)
         
         return df
         
@@ -131,21 +136,70 @@ class plotData:
         plt.xlabel('Date',fontsize=14)
         plt.ylabel('$',fontsize=14)
         plt.xlim(prevDay, currentDay)
+        plt.autoscale(enable=True, axis='both',tight=None)
         plt.show()
+        
+    
+    def FiftyTwoWkAvg(self,dataFrame):
+        """Calculates 260,100,50,30 day moving averages."""
+        
+        data = dataFrame['Close'].head(260)  #calculate 52 week avg
+        data2 = dataFrame['Close'].head(100) #calculate 100 day avg
+        data3 = dataFrame['Close'].head(50) #calculate 50 day avg
+        data4 = dataFrame['Close'].head(30) #calculate 30 day avg
+        
+        AVG1 = data.sum()/len(data)
+        AVG2 = data2.sum()/len(data2)
+        AVG3 = data3.sum()/len(data3)
+        AVG4 = data4.sum()/len(data4)
+        
+        return AVG1,AVG2,AVG3,AVG4
+        
+    def checkCache(self,stockName):
+        """Check the local directory if symbol was queried in the past day.
+        If csv file does not exist or symbol was queried past one day query again.
+        else return a pandas dataframe.
+        """
+
+        directory = "stock\'"
+        file = directory + stockName + ".csv"
+
+        #check if file exists
+        if os.path.isfile(file):
+
+            #if stock data is one day old , 86400 = 1 day query the data again
+            if (os.path.getmtime(file) - time.time()) > 86400.00:
+
+                return False
+            
+            else:
+                
+                return True
+
+        else:
+            return False
 
 if __name__ == "__main__":
-    symbol = "GE"
-    
-    #plot time series data
-    pl = plotData(symbol)
-    pl.plotChart(pl.generateDataFrame(pl.queryStockData()),5)
 
-    #extract financials from marketwatch
-    ex = finExtract()
-    ex.finExtractor(symbol)
+    symbol = input("Enter Stock Ticker: ")
     
-    #extract text from scraped data
-    scraped = ExtractText(symbol)
-    print(scraped.generateTable())
+    directory = "stock\'"
+    file = directory + symbol + ".csv"
+    
+    #create stock Data object
+    p1 = stockData(symbol)
+    
+    #query data or generate dataframe
+    if p1.checkCache(symbol):
+        p1df = pd.read_csv(file)
+    else:
+        #query stock data
+        p1Query = p1.queryStockData()
+        p1df = p1.generateDataFrame(p1Query)
+    
+    #plot the timeseries data
+    p1.plotChart(p1df,2)
+    
+    print(p1.FiftyTwoWkAvg(p1.generateDataFrame(p1.queryStockData())))
     
     
